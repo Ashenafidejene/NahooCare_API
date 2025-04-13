@@ -2,7 +2,7 @@ import uuid
 from fastapi import HTTPException
 from db.mongodb import database
 from models.healthcare_model import HealthcareCenter
-from schemas.healthcare_schema import HealthcareCenterCreate, HealthcareSearch ,HealthcareCenterUpdate, HelathcareCenterRespons
+from schemas.healthcare_schema import HealthcareCenterCreate, HealthcareSearch ,HealthcareCenterUpdate, HealthcareSearchEngin, HelathcareCenterRespons
 from bson import ObjectId
 from pymongo import GEOSPHERE
 import logging
@@ -51,7 +51,7 @@ async def search_healthcare_centers(user_id:str , search_data: HealthcareSearch)
     """
     try:
         query = {
-            "specialists": search_data.specialty,
+            "specialists": {"$in": search_data.specialties},  # Checks if any specialty matches
             "location": {
                 "$near": {
                     "$geometry": {"type": "Point", "coordinates": [search_data.longitude, search_data.latitude]},
@@ -59,18 +59,17 @@ async def search_healthcare_centers(user_id:str , search_data: HealthcareSearch)
                 }
             }
         }
-        centers = await collection.find(query).to_list(10)  # Limit results to 10
-
+        
+        centers = await collection.find(query, {"_id": 0}).to_list(10)  # Excludes _id, limits to 10
+        
         if not centers:
             raise HTTPException(status_code=404, detail="No matching healthcare centers found")
-        search_record = SavedSearchCreate(
-            user_id= user_id,
-            search_id=str(uuid.uuid4()),
-            search_parameters=search_data.model_dump(),
-            results_count=len(centers)
-        )
-        await create_search_record(search_record)
+            
         return centers
+
+    except Exception as e:
+        logging.error(f"Error searching healthcare centers: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     except Exception as e:
         logging.error(f"Error searching healthcare centers: {e}")
@@ -101,42 +100,68 @@ async def delete_healthcare_center(center_id: str):
     except Exception as e:
         logging.error(f"Error deleting healthcare center: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
-async def search_engin_health_care_center(user_id:str,search_data: HealthcareSearch):
+
+async def search_engin_health_care_center(user_id: str, search_data: HealthcareSearchEngin):
     try:
-        query = {}  
-
-
+        query = {}
+        
+        # Name search (case-insensitive partial match)
         if search_data.name:
-            query["name"] = {"$regex": search_data.name, "$options": "i"}  # Case-insensitive
-
-
+            query["name"] = {"$regex": f".*{search_data.name}.*", "$options": "i"}
+        
+        # Specialty search (supports single or multiple specialties)
         if search_data.specialty:
-            query["specialists"] = search_data.specialty  # Matches exact specialty
-
-
-        if search_data.latitude and search_data.longitude:
+            if isinstance(search_data.specialty, list):
+                query["specialists"] = {"$in": search_data.specialty}  # Any of these specialties
+            else:
+                query["specialists"] = search_data.specialty  # Exact match
+        
+        # Location filter (if coordinates provided)
+        if all([search_data.latitude, search_data.longitude, search_data.max_distance_km]):
             query["location"] = {
                 "$near": {
-                    "$geometry": {"type": "Point", "coordinates": [search_data.longitude, search_data.latitude]},
-                    "$maxDistance": search_data.max_distance_km * 1000  # Convert km to meters
+                    "$geometry": {
+                        "type": "Point",
+                        "coordinates": [search_data.longitude, search_data.latitude]
+                    },
+                    "$maxDistance": search_data.max_distance_km * 1000
                 }
             }
-
-
-        skip = (search_data.page - 1) * search_data.page_size
-        centers = await collection.find(query).skip(skip).limit(search_data.page_size).to_list(None)
-
-        if not centers:
-            raise HTTPException(status_code=404, detail="No matching healthcare centers found")
         
+        # Execute query with projection and limit
+        centers = await collection.find(
+            query,
+            {"_id": 0}  # Exclude MongoDB _id field
+        ).to_list(10)
+        
+        if not centers:
+            raise HTTPException(
+                status_code=404,
+                detail="No healthcare centers found matching your criteria"
+            )
+        
+        # Log the successful search
         search_record = SavedSearchCreate(
-            user_id= user_id,
+            user_id=user_id,
             search_id=str(uuid.uuid4()),
             search_parameters=search_data.model_dump(),
-            results_count=len(centers)
+            results_count=len(centers),
+            Analysis_id = "None"
         )
         await create_search_record(search_record)
+        
         return centers
+    
+    except Exception as e:
+        logging.error(f"Search error for user {user_id}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while searching for healthcare centers"
+        )
+
+    except Exception as e:
+        logging.error(f"Error searching healthcare centers: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     except Exception as e:
         logging.error(f"Error searching healthcare centers: {e}")
