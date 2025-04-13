@@ -86,3 +86,6 @@ async def analyze_symptoms(request: SymptomAnalysisRequest) -> SymptomAnalysisRe
             status_code=500, 
             detail=f"Analysis failed: {str(e)}"
         )
+async def delete_symptom_analysis(user_id:str):
+    result = await collection.delete_many({"user_id":user_id})
+    return result.deleted_count
