@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from controllers import database_controller, account_controller,healthprofile_controller,healthcare_controller,rating_controller, admin_controller, first_aid_guide_controller, saved_search_controller,symptom_analysis_controller
+from controllers import database_controller, account_controller, end_point_controllers,healthprofile_controller,healthcare_controller,rating_controller, admin_controller, first_aid_guide_controller, saved_search_controller,symptom_analysis_controller
 
 app = FastAPI()
 
@@ -18,4 +18,5 @@ app.include_router(admin_controller.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(first_aid_guide_controller.router, prefix="/api/first-aid-guide", tags=["First Aid Guide"])
 app.include_router(saved_search_controller.router, prefix="/api/saved-searches", tags=["Saved Searches"])
 app.include_router(symptom_analysis_controller.router,prefix='/api/SymptomAnalysis',tags=["Ai-Analysis"])
+app.include_router(end_point_controllers.router,prefix='/api/endpoint',tags=["end-point"])
 

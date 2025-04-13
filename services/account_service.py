@@ -8,6 +8,10 @@ from datetime import datetime
 
 import logging
 import uuid
+
+from services.healthprofile_service import delete_health_profile
+from services.saved_search_service import delete_search_history
+from services.symptom_analysis_services import delete_symptom_analysis
 collection = database["accounts"]
 
 async def create_account(account: AccountCreate):
@@ -90,7 +94,10 @@ async def update_account(user_id: str, update_data: AccountResponse):
 async def delete_account(user_id: str):
     try:
         result = await collection.delete_one({"user_id": user_id})
-        if result.deleted_count == 0:
+        result2 = await delete_symptom_analysis(user_id)
+        result3 = await delete_health_profile(user_id)
+        result4 = await delete_search_history(user_id=user_id)
+        if result.deleted_count == 0 :
             raise HTTPException(status_code=404, detail="User not found")
 
         return {"message": "Account deleted successfully"}
