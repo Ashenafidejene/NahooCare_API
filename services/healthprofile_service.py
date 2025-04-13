@@ -66,7 +66,7 @@ async def delete_health_profile(profile_id: str):
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Health profile not found")
 
-        return {"message": "Health profile deleted successfully"}
+        return result.deleted_count
 
     except Exception as e:
         logging.error(f"Error deleting health profile: {e}")
