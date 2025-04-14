@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-import uuid
+
 from db.mongodb import database
 from models.account_model import Account
 from schemas.account_schemas import AccountCreate, AccountResponse,   PasswordResetSchema
@@ -7,9 +7,9 @@ from core.security import hash_password, verify_password, create_access_token
 from datetime import datetime
 
 import logging
-import uuid
 
-from services.healthprofile_service import delete_health_profile
+
+from services.healthprofile_service import delete_health_profile, delete_health_profile_by_id
 from services.saved_search_service import delete_search_history
 from services.symptom_analysis_services import delete_symptom_analysis
 collection = database["accounts"]
@@ -95,7 +95,7 @@ async def delete_account(user_id: str):
     try:
         result = await collection.delete_one({"user_id": user_id})
         result2 = await delete_symptom_analysis(user_id)
-        result3 = await delete_health_profile(user_id)
+        result3 = await delete_health_profile_by_id(user_id)
         result4 = await delete_search_history(user_id=user_id)
         if result.deleted_count == 0 :
             raise HTTPException(status_code=404, detail="User not found")
@@ -133,11 +133,11 @@ async def reset_password(data: PasswordResetSchema):
     except Exception as e:
         logging.error(f"Error resetting password: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
-async def get_secrete_question(user_id:str):
+async def get_secrete_question(phone_number:str):
     try:
-        account = await collection.find_one({"user_id": user_id})
+        account = await collection.find_one({"phone_number": phone_number})
         if not account:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(status_code=404, detail="This phone number does not found ")
         return account['secret_question']
     except Exception as e:
         logging.error(f"Error finding secret_question :{e}")

@@ -71,3 +71,14 @@ async def delete_health_profile(profile_id: str):
     except Exception as e:
         logging.error(f"Error deleting health profile: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+async def delete_health_profile_by_id(user_id: str):
+    try:
+        result = await collection.delete_one({"user_id": user_id})
+        if result.deleted_count == 0:
+            print("user have not health profile")
+
+        return result.deleted_count
+
+    except Exception as e:
+        logging.error(f"Error deleting health profile: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")

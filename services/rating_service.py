@@ -9,16 +9,16 @@ collection = database["ratings"]
 healthcare_collection = database["healthcare_centers"]
 
 # Submit a Rating
-async def submit_rating(rating: RatingCreate):
+async def submit_rating(user_id : str , rating: RatingCreate):
     try:
-        existing_rating = await collection.find_one({"user_id": rating.user_id, "center_id": rating.center_id})
+        existing_rating = await collection.find_one({"user_id": user_id, "center_id": rating.center_id})
         if existing_rating:
             raise HTTPException(status_code=400, detail="User has already rated this healthcare center")
 
         rating_data = rating.dict()
         rating_data["rated_at"] = datetime.utcnow()
-        rating_data["rating_id"] = "rating_id_" + rating.center_id +'_' + rating.user_id
-
+        rating_data["rating_id"] = "rating_id_" + rating.center_id +'_' + user_id
+        rating_data["user_id"] = user_id
         result = await collection.insert_one(rating_data)
         if not result.inserted_id:
             raise HTTPException(status_code=500, detail="Failed to submit rating")
