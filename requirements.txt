@@ -6,3 +6,8 @@ python-dotenv
 bcrypt
 pyjwt
 passlib[bcrypt]
+requests
+httpx
+pytest
+pytest-asyncio
+
