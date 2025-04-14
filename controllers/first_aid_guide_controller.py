@@ -8,12 +8,13 @@ from services.first_aid_guide_service import (
     get_all_first_aid_guides
 )
 from middleware.auth import get_current_user
+from middleware.admin_auth import get_current_admin
 
 router = APIRouter()
 
 # Create a New First Aid Guide
 @router.post("/create")
-async def add_first_aid_guide(guide: FirstAidGuideCreate):
+async def add_first_aid_guide(guide: FirstAidGuideCreate,current_admin: dict = Depends(get_current_admin)):
     """
     Creates a new first aid guide in the database.
     
@@ -47,10 +48,8 @@ async def get_all_guides():
 async def get_guide(guide_id: str):
     """
     Retrieves a specific first aid guide by its ID.
-    
     Args:
         guide_id (str): The ID of the guide to retrieve.
-    
     Returns:
         dict: The first aid guide if found, or raises a 404 error if not found.
     """
@@ -61,7 +60,7 @@ async def get_guide(guide_id: str):
 
 # Update an Existing First Aid Guide
 @router.put("/{guide_id}")
-async def update_guide(guide_id: str, update_data: FirstAidGuideUpdate):
+async def update_guide(guide_id: str, update_data: FirstAidGuideUpdate,current_admin: dict = Depends(get_current_admin)):
     """
     Updates an existing first aid guide with new data.
     
@@ -79,7 +78,7 @@ async def update_guide(guide_id: str, update_data: FirstAidGuideUpdate):
 
 # Delete a First Aid Guide by ID
 @router.delete("/{guide_id}")
-async def delete_guide(guide_id: str):
+async def delete_guide(guide_id: str,current_admin: dict = Depends(get_current_admin)):
     """
     Deletes a specific first aid guide by its ID.
     
