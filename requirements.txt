@@ -10,4 +10,7 @@ requests
 httpx
 pytest
 pytest-asyncio
-
+bson
+python-jose
+google-generativeai
+python-jose
