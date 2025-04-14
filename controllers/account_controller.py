@@ -23,33 +23,33 @@ async def login(data: LoginSchema):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid phone number or password")
 
-    access_token = create_access_token({"sub": user["phone_number"]}, expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    access_token = create_access_token({"sub": user["user_id"],"user_id":user["user_id"]}, expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     return {"access_token": access_token, "token_type": "bearer"}
 
 # Get Account (Protected Route)
-@router.get("/{user_id}")
-async def get_user_account(user_id: str):
-    account = await get_account(user_id)
+@router.get("/")
+async def get_user_account(current_user: dict = Depends(get_current_user)): 
+    account = await get_account(current_user.get("user_id"))
     if account:
         return account
     raise HTTPException(status_code=404, detail="User not found")
-@router.get("/getSecretQuestion/{user_id}")
-async def get_secret_question(user_id:str):
-    result = await get_secrete_question(user_id)
+@router.get("/getSecretQuestion/{phone_number}")
+async def get_secret_question(phone_number:str):
+    result = await get_secrete_question(phone_number)
     if result:
         return result
     return HTTPException(status_code=404, detail="User not found")
 @router.put("/{user_id}")
-async def update_user_account(user_id: str, update_data:  AccountResponse):
-    modified_count = await update_account(user_id, update_data)
+async def update_user_account(str, update_data:  AccountResponse,current_user: dict = Depends(get_current_user)):
+    modified_count = await update_account(current_user.get("user_id"), update_data)
     if modified_count:
         return {"message": "Account updated successfully"}
     raise HTTPException(status_code=400, detail="Failed to update account")
 
 
-@router.delete("/{user_id}")
-async def delete_user_account(user_id: str):
-    deleted_count = await delete_account(user_id)
+@router.delete("/",)
+async def delete_user_account(current_user: dict = Depends(get_current_user)):
+    deleted_count = await delete_account(current_user.get("user_id"))
     if deleted_count:
         return {"message": "Account deleted successfully"}
     raise HTTPException(status_code=400, detail="Failed to delete account")
