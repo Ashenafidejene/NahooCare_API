@@ -9,15 +9,13 @@ router = APIRouter()
 async def get_healthcare_Center(name:str,current_admin: dict = Depends(get_current_admin)):
     result = await get_healthcareCenter(name)
     return result
-
 @router.post("/create",)
 async def create(center: HealthcareCenterCreate,current_admin: dict = Depends(get_current_admin)):#current_user: dict = Depends(get_current_user)):
     result = await create_healthcare_center(center)
     if result : 
         return {"message": "Healthcare center created successfully"}
-
 @router.post("/search")
-async def search(search_data: HealthcareSearch,current_user: dict = Depends(get_current_user)):#current_user: dict = Depends(get_current_user)):
+async def search(search_data: HealthcareSearch,current_user: dict = Depends(get_current_user)):
     return await search_healthcare_centers(current_user["user_id"],search_data)
 @router.put("/healthcare/{center_id}")
 async def update_center(center_id: str, update_data: HealthcareCenterUpdate,current_admin: dict = Depends(get_current_admin)):#) current_user: dict = Depends(get_current_user)):
