@@ -40,13 +40,13 @@ async def delete_history_by_search_id(search_id: str,current_user: dict = Depend
 
 # Delete by User ID
 @router.delete("/delete-history-by-user")
-async def delete_history_by_user_id(current_user: dict = Depends(get_current_user)):
+async def delete_history_by_user_id(user_id:str ,current_user: dict = Depends(get_current_user)):
     """
     Endpoint to delete all search histories for a specific user ID.
     """
-    deleted_count = await delete_search_history(user_id=current_user["user_id"])
+    deleted_count = await delete_search_history(user_id)
     if deleted_count:
-        return {"message": f"{deleted_count} search histories deleted successfully for user {current_user["user_id"]}"}
+        return {"message": f"{deleted_count} search histories deleted successfully for user {user_id}"}
     raise HTTPException(status_code=404, detail="No search history found for the user")
 
 
