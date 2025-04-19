@@ -22,7 +22,7 @@ async def analyze_symptoms(request: SymptomAnalysisRequest) -> SymptomAnalysisRe
     1. List 3-5 possible conditions (comma-separated)
     2. Recommend departments from:
        [Cardiac, Internal Medicine, Pediatrics, Orthopedics, 
-        Surgery, Neurology, ENT, General Hospital]
+        Surgery, Neurology, ENT, General Hospital,Comprehensive Hospital,Comprehensive Specialized Hospital,Primary Hospital]
     3. Provide list  simple first aid recommendation that 
        applies to most of these conditions (title + description)
     
@@ -32,7 +32,6 @@ async def analyze_symptoms(request: SymptomAnalysisRequest) -> SymptomAnalysisRe
     First Aid Title: 3-5 word action title
     First Aid Description: 1-2 sentence simple advice
     """
-    
     try:
         # Correct API call with generation config
         response = model.generate_content(

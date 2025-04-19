@@ -42,15 +42,17 @@ async def get_health_profile(user_id:str):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-async def update_health_profile(profile_id: str, update_data: HealthProfileUpdate):
+async def update_health_profile(user_id: str, update_data: HealthProfileUpdate):
     try:
         if not update_data.dict(exclude_unset=True):
-            raise HTTPException(status_code=400, detail="No update data provided")
-
+            raise HTTPException(status_code=400, detail="No update data provided") 
+        existing_profile = await collection.find_one({"user_id": user_id})
+        if not existing_profile: 
+           raise HTTPException(status_code=400,detail="the user have not account before update it must create profile ")
         update_data_dict = update_data.dict(exclude_unset=True)
         update_data_dict["last_update"] = datetime.utcnow()
 
-        result = await collection.update_one({"profile_id": profile_id}, {"$set": update_data_dict})
+        result = await collection.update_one({"user_id": user_id}, {"$set": update_data_dict})
         if result.modified_count == 0:
             raise HTTPException(status_code=400, detail="No changes were made")
 
