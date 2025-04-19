@@ -1,15 +1,16 @@
+import uuid
 from fastapi import HTTPException
 
 from db.mongodb import database
 from models.account_model import Account
-from schemas.account_schemas import AccountCreate, AccountResponse,   PasswordResetSchema
+from schemas.account_schemas import AccountCreate, AccountResponse,   PasswordResetSchema, UpdateAccount
 from core.security import hash_password, verify_password, create_access_token
 from datetime import datetime
 
 import logging
 
 
-from services.healthprofile_service import delete_health_profile, delete_health_profile_by_id
+from services.healthprofile_service import  delete_health_profile_by_id
 from services.saved_search_service import delete_search_history
 from services.symptom_analysis_services import delete_symptom_analysis
 collection = database["accounts"]
@@ -23,7 +24,7 @@ async def create_account(account: AccountCreate):
         del account.password
         account_data = account.dict()
         account_data["hashed_password"] = hashed_password
-        account_data["user_id"] = ('user_id_'+str(account_data["phone_number"]))
+        account_data["user_id"] = str(uuid.uuid4())
         account_data["created_at"] = str(datetime.utcnow().isoformat())
         result = await collection.insert_one(account_data)
         if not result.inserted_id:
@@ -62,10 +63,17 @@ async def get_account(user_id: str):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-async def update_account(user_id: str, update_data: AccountResponse):
+async def update_account(user_id: str, update_data: UpdateAccount):
     try:
+        existing_user = await collection.find_one({"phone_number": update_data.phone_number})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Phone number already registered")
+        hashPassword = hash_password(update_data.password)
+        del update_data.password
+        
         # Convert Pydantic model to dictionary and exclude unset fields
         update_dict = update_data.dict(exclude_unset=True)
+        update_dict["hash_password"] = hashPassword
         
         # Update the account in MongoDB
         result = await collection.update_one(
