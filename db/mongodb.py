@@ -7,7 +7,7 @@ try:
         tls=True,
         tlsAllowInvalidCertificates=True  # If SSL certificates are causing issues
     )
-    database = client[settings.MONGO_DB_NAME]
+    database = client["SBNHCRSWFAA"]
     print("✅ MongoDB client created successfully!")
 except Exception as e:
     print(f"❌ Error creating MongoDB client: {e}")
