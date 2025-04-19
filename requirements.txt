@@ -13,4 +13,4 @@ pytest-asyncio
 bson
 python-jose
 google-generativeai
-python-jose
+python-jose 
