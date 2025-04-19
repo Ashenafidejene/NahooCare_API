@@ -20,10 +20,10 @@ class Account(BaseModel):
     full_name: str
     phone_number: str
     hashed_password: str  # Store hashed passwords
-    gender: str
+    #gender: str
     secret_question: str
     secret_answer: str  # Store hashed secret answer
-    age: int
+    #age: int
     created_at: str
 
     class Config:
