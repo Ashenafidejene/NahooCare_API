@@ -3,7 +3,6 @@ from fastapi.security import OAuth2PasswordBearer
 import jwt
 from core.config import settings
 
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/login")
 
 

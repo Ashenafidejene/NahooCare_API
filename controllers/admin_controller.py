@@ -20,14 +20,11 @@ async def login(admin: AdminLogin ):
 
 
 @router.put("/")
-async def update( update_data: AdminUpdate , current_admin: dict = Depends(get_current_admin)):# current_user: dict = Depends(get_current_user)):
+async def update(update_data: AdminUpdate , current_admin: dict = Depends(get_current_admin)):# current_user: dict = Depends(get_current_user)):
     return await update_admin(current_admin["admin_id"], update_data)
-
-
 @router.post("/backup")
 async def backup(current_admin: dict = Depends(get_current_admin)):
     return backup_database()
-
 @router.post("/restore")
-async def restore(backup_file: str, current_admin: dict = Depends(get_current_admin)):
+async def restore(backup_file: str ,current_admin: dict = Depends(get_current_admin)):
     return restore_database(backup_file)
