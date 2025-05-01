@@ -3,6 +3,7 @@ from datetime import timedelta
 from db.mongodb import database
 from models.admin_model import Admin
 from schemas.admin_schema import AdminCreate, AdminUpdate, AdminLogin
+from services.account_service import user_info
 from core.security import hash_password, verify_password, create_access_token
 import uuid
 from core.config import settings
@@ -43,3 +44,5 @@ async def update_admin(admin_id: str, update_data: AdminUpdate):
         raise HTTPException(status_code=400, detail="No changes were made")
 
     return {"message": "Admin updated successfully"}
+async def user_info_admin():
+    return await user_info()

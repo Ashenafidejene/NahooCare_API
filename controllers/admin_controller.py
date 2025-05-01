@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from schemas.admin_schema import AdminCreate, AdminUpdate, AdminLogin
-from services.admin_service import create_admin, login_admin, update_admin
+from services.admin_service import create_admin, login_admin, update_admin,user_info_admin
 from services.backup_service import backup_database, restore_database
 from middleware.admin_auth import get_current_admin
 
@@ -28,3 +28,6 @@ async def backup(current_admin: dict = Depends(get_current_admin)):
 @router.post("/restore")
 async def restore(backup_file: str ,current_admin: dict = Depends(get_current_admin)):
     return restore_database(backup_file)
+@router.get("/userInfo")
+async def userInfo():
+    return await user_info_admin()

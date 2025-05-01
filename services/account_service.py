@@ -163,3 +163,11 @@ async def get_secrete_question(phone_number:str):
     except Exception as e:
         logging.error(f"Error finding secret_question :{e}")
         raise HTTPException(status_code=500 , detail="Internal server error")
+async def user_info():
+    total_users = await collection.count_documents({})
+    total_dormant_users = await collection2.count_documents({})
+
+    return {
+        "total_users": total_users,
+        "total_dormant_users": total_dormant_users
+    }
