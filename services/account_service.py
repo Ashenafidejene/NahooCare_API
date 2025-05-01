@@ -10,14 +10,18 @@ from datetime import datetime
 import logging
 
 
+from schemas.dormant_user_schemas import CreateDormant
 from services.healthprofile_service import  delete_health_profile_by_id
 from services.saved_search_service import delete_search_history
 from services.symptom_analysis_services import delete_symptom_analysis
 collection = database["accounts"]
-
+collection2 = database['dormant_user']
 async def create_account(account: AccountCreate):
     try:
-        existing_user = await collection.find_one({"phone_number": account.phone_number}) #phone nmber 
+        existing_user = await collection.find_one({"phone_number": account.phone_number}) #phone number 
+        dormant_user = await collection2.find_one({"phone_number": account.phone_number})
+        if dormant_user:
+            await collection2.delete_one({"phone_number":account.phone_number})
         if existing_user:
             raise HTTPException(status_code=400, detail="Phone number already registered")
         hashed_password = hash_password(account.password)
@@ -66,6 +70,9 @@ async def get_account(user_id: str):
 async def update_account(user_id: str, update_data: UpdateAccount):
     try:
         existing_user = await collection.find_one({"phone_number": update_data.phone_number})
+        dormant_user = await collection2.find_one({"phone_number": update_data.phone_number})
+        if dormant_user:
+            await collection2.delete_one({"phone_number":update_data.phone_number})
         if existing_user:
             raise HTTPException(status_code=400, detail="Phone number already registered")
         hashPassword = hash_password(update_data.password)
@@ -101,7 +108,13 @@ async def update_account(user_id: str, update_data: UpdateAccount):
 
 async def delete_account(user_id: str):
     try:
+        existing_user = await collection.find_one({"user_id": user_id})
+        dormant_user = CreateDormant(full_name=existing_user["full_name"],phone_number=existing_user["phone_number"])
+        
+        await collection2.insert_one(dormant_user.dict())
+        
         result = await collection.delete_one({"user_id": user_id})
+        
         result2 = await delete_symptom_analysis(user_id)
         result3 = await delete_health_profile_by_id(user_id)
         result4 = await delete_search_history(user_id=user_id)
