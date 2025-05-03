@@ -2,7 +2,7 @@ import uuid
 from fastapi import HTTPException
 from db.mongodb import database
 from models.healthcare_model import HealthcareCenter
-from schemas.healthcare_schema import HealthcareCenterCreate, HealthcareSearch ,HealthcareCenterUpdate, HealthcareSearchEngin, HelathcareCenterRespons
+from schemas.healthcare_schema import HealthcareCenterCreate, HealthcareSearch ,HealthcareCenterUpdate, HealthcareSearchEngin, HelathcareCenterRespons, SearchOutput
 from bson import ObjectId
 from pymongo import GEOSPHERE
 import logging
@@ -11,25 +11,28 @@ from schemas.saved_search_schemas import SavedSearchCreate
 from services.saved_search_service import create_search_record
 
 collection = database["healthcare_centers"]
+collection2 = database["dormant_healthcare_centers"]
 
-#Ensure geospatial indexing for location-based search
 collection.create_index([("location", GEOSPHERE)])
 
 async def create_healthcare_center(center: HealthcareCenterCreate):
     try:
         existing_center = await collection.find_one({"name": center.name})
+        dormant_center = await collection2.find_one({"name":center.name})
+        if dormant_center : 
+            await collection2.delete_one({"name":center.name})
         if existing_center:
             raise HTTPException(status_code=400, detail="Healthcare name already exists")
 
         center_data = center.dict()
         
         center_data["location"] = {"type": "Point", "coordinates": [center.longitude, center.latitude]} 
-        # Geospatial field
-        center_data["center_id"] = "center_id_" + center.name
+        center_data["search_appearance"] = 0
+        center_data["view_info"] = 0 
+        center_data["center_id"] = uuid.uuid4()
         result = await collection.insert_one(center_data)
         if not result.inserted_id:
             raise HTTPException(status_code=500, detail="Failed to create healthcare center")
-
         return True 
 
     except Exception as e:
@@ -39,13 +42,10 @@ async def create_healthcare_center(center: HealthcareCenterCreate):
 async def search_healthcare_centers(user_id:str , search_data: HealthcareSearch):
     """
     Search for healthcare centers based on specialty and location.
-
     Args:
         search_data (HealthcareSearch): Search criteria including specialty, latitude, longitude, and max distance.
-
     Returns:
         List of healthcare centers matching the criteria.
-
     Raises:
         HTTPException: If no centers are found or an error occurs.
     """
@@ -59,18 +59,31 @@ async def search_healthcare_centers(user_id:str , search_data: HealthcareSearch)
                 }
             }
         }
-        
         centers = await collection.find(query, {"_id": 0}).to_list(10)  # Excludes _id, limits to 10
-        
         if not centers:
             raise HTTPException(status_code=404, detail="No matching healthcare centers found")
             
-        return centers
+        output = []
+        for center in centers:
+            # Update the search_appearance field
+            new_count = center.get("search_appearance", 0) + 1
+            await collection.update_one(
+                {"center_id": center["center_id"]},
+                {"$set": {"search_appearance": new_count}}
+            )
 
+            # Cast to SearchOutput
+            result = SearchOutput(
+                center_id=center["center_id"],
+                name=center["name"],
+                latitude=center["location"]["coordinates"][1],
+                longitude=center["location"]["coordinates"][0]
+            )
+            output.append(result)
+        return output
     except Exception as e:
         logging.error(f"Error searching healthcare centers: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
     except Exception as e:
         logging.error(f"Error searching healthcare centers: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
@@ -79,7 +92,6 @@ async def update_healthcare_center(center_id: str, update_data: HealthcareCenter
         update_data_dict = update_data.dict(exclude_unset=True)
         if not update_data_dict:
             raise HTTPException(status_code=400, detail="No update data provided")
-
         result = await collection.update_one({"center_id": center_id}, {"$set": update_data_dict})
         if result.modified_count == 0:
             raise HTTPException(status_code=400, detail="No changes were made")
@@ -94,7 +106,6 @@ async def delete_healthcare_center(center_id: str):
         result = await collection.delete_one({"center_id": center_id})
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Healthcare center not found")
-
         return {"message": "Healthcare center deleted successfully"}
 
     except Exception as e:
@@ -150,7 +161,24 @@ async def search_engin_health_care_center(user_id: str, search_data: HealthcareS
         )
         await create_search_record(search_record)
         
-        return centers
+        output = []
+        for center in centers:
+            # Update the search_appearance field
+            new_count = center.get("search_appearance", 0) + 1
+            await collection.update_one(
+                {"center_id": center["center_id"]},
+                {"$set": {"search_appearance": new_count}}
+            )
+
+            # Cast to SearchOutput
+            result = SearchOutput(
+                center_id=center["center_id"],
+                name=center["name"],
+                latitude=center["location"]["coordinates"][1],
+                longitude=center["location"]["coordinates"][0]
+            )
+            output.append(result)
+        return output
     
     except Exception as e:
         logging.error(f"Search error for user {user_id}: {str(e)}", exc_info=True)
@@ -166,13 +194,17 @@ async def search_engin_health_care_center(user_id: str, search_data: HealthcareS
     except Exception as e:
         logging.error(f"Error searching healthcare centers: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
-async def get_healthcareCenter(name: str):
+async def get_healthcareCenter(center_id: str):
     try:
-        existing_center = await collection.find_one({"name": name})
+        existing_center = await collection.find_one({"center_id": center_id})
         
         if not existing_center: 
             raise HTTPException(status_code=404, detail="Healthcare Center not found")
-            
+        new_count = existing_center.get("view_info", 0) + 1
+        await collection.update_one(
+                {"center_id": center_id},
+                {"$set": {"view_info": new_count}}
+            )  
         if "_id" in existing_center:
             existing_center['_id'] = str(existing_center['_id'])
             
@@ -190,3 +222,38 @@ async def get_healthcareCenter(name: str):
         logging.error(f"Error getting healthcare center: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+async def admin_get_health(center_id: str):
+    try:
+        existing_center = await collection.find_one({"center_id": center_id})
+        
+        if not existing_center: 
+            raise HTTPException(status_code=404, detail="Healthcare Center not found")
+        
+        if "_id" in existing_center:
+            existing_center['_id'] = str(existing_center['_id'])
+            
+        return existing_center
+    except Exception as e:
+        logging.error(f"Error getting healthcare center: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+async def admin_search_healthCare(specialists: str):
+    try:
+        # Convert comma-separated string to a list of specialties
+        specialist_list = [s.strip() for s in specialists.split(",") if s.strip()]
+        # Build query
+        query = {
+            "specialists": {"$in": specialist_list}
+        }
+
+        # Perform query
+        hospital_list = await collection.find(query, {"_id": 0}).to_list(length=100)
+        return hospital_list
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+async def admin_total_healthCare():
+    total_healthCare= await collection.count_documents({})
+    total_dormant_heathCare = await collection2.count_documents({})
+    return {
+        "total_healthCare":total_healthCare,
+        "total_dormant_heathCare": total_dormant_heathCare
+    }

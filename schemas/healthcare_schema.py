@@ -28,6 +28,11 @@ class HealthcareCenterUpdate(BaseModel):
     "Reception": "+251-11-123-4567",
     "Emergency": "+251-91-234-5678"})
     available_time : Optional[List[str]] = Field(..., example=["it works every day 8:00 am - 10:pm "])
+class SearchOutput(BaseModel):
+    center_id:str =  Field(..., example="center_id_Yekatit")
+    name: str = Field(..., example="Yekatit 12 General Hospital")
+    latitude: float = Field(..., example=9.0456)
+    longitude: float = Field(..., example=38.7612)
 class HelathcareCenterRespons(BaseModel):
     center_id:str =  Field(..., example="center_id_Yekatit")
     name: str = Field(..., example="Yekatit 12 General Hospital")
