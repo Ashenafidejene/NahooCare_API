@@ -29,5 +29,5 @@ async def backup(current_admin: dict = Depends(get_current_admin)):
 async def restore(backup_file: str ,current_admin: dict = Depends(get_current_admin)):
     return restore_database(backup_file)
 @router.get("/userInfo")
-async def userInfo():
+async def userInfo(current_admin: dict = Depends(get_current_admin)):
     return await user_info_admin()
