@@ -10,7 +10,7 @@ router = APIRouter()
 async def create(profile: HealthProfileCreate,current_user: dict = Depends(get_current_user)):
     result = await create_health_profile(current_user["user_id"],profile)
     if result:
-        return "Account create success Fully"
+        return {"message":"Account create success Fully"}
     raise HTTPException(status_code=400, detail="Failed to create health profile")
 @router.get("/")
 async def get_profile(current_user: dict = Depends(get_current_user)):
@@ -30,5 +30,5 @@ async def update_profile( update_data: HealthProfileUpdate,current_user: dict = 
 async def delete_profile(current_user: dict = Depends(get_current_user)):
     deleted = await delete_health_profile_by_id(current_user["user_id"])
     if deleted == 0 :
-       return "user have not health profile"
-    return "deleted is successfully "
+       return {"message": "user have not health profile"}
+    return {"message": "deleted is successfully "}

@@ -35,7 +35,7 @@ async def register(account: AccountCreate):
     """
     result = await create_account(account)
     if result:
-        return {"Account created successfully"}
+        return {"message":"Account created successfully"}
     raise HTTPException(status_code=400, detail="Phone number already registered")
 
 # Login and Get JWT Token
