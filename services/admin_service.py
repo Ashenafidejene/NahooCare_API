@@ -34,7 +34,7 @@ async def login_admin(admin: AdminLogin):
     if not admin_record or not verify_password(admin.password, admin_record["password"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    token = create_access_token({"sub": admin_record["email"],"admin_id":admin_record["admin_id"]}, expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    token = create_access_token({"sub": admin_record["email"],"admin_id":admin_record["admin_id"]}, expires_delta=timedelta(minutes = 60))
     return {"access_token": token, "token_type": "bearer"}
 
 

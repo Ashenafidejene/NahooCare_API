@@ -1,15 +1,22 @@
 from fastapi import APIRouter, HTTPException, Depends
 from middleware.admin_auth import get_current_admin
 from schemas.healthcare_schema import HealthcareCenterCreate, HealthcareCenterUpdate, HealthcareSearch, HealthcareSearchEngin
-from services.healthcare_service import create_healthcare_center, delete_healthcare_center, get_healthcareCenter, search_engin_health_care_center, search_healthcare_centers, update_healthcare_center
+from services.healthcare_service import admin_search_healthCare, admin_total_healthCare, create_healthcare_center, delete_healthcare_center, get_healthcareCenter, search_engin_health_care_center, search_healthcare_centers, update_healthcare_center
 from middleware.auth import get_current_user
 
 router = APIRouter()
-@router.get("/get_healthcareCenter/{name}")
-async def get_healthcare_Center(name:str,current_admin: dict = Depends(get_current_admin)):
-    result = await get_healthcareCenter(name)
+@router.get("/totalInfo")
+async def healthCareInfo():
+    return await admin_total_healthCare()
+@router.get("/get_healthcareCenter/{speciality}")
+async def get_healthcare_Center(specialists:str,current_admin: dict = Depends(get_current_admin)):
+    result = await admin_search_healthCare(specialists)
     return result
-@router.post("/create",)
+@router.get("/get_healthcare/user/{center_id}")
+async def get_healthcare(center_id: str ,current_user: dict = Depends(get_current_user)):
+    result = await get_healthcareCenter(center_id)
+    return result 
+@router.post("/create")
 async def create(center: HealthcareCenterCreate,current_admin: dict = Depends(get_current_admin)):#current_user: dict = Depends(get_current_user)):
     result = await create_healthcare_center(center)
     if result : 
@@ -26,4 +33,4 @@ async def delete_center(center_id: str,current_admin: dict = Depends(get_current
     return await delete_healthcare_center(center_id)
 @router.post("search/specification/")
 async def searchEngin(search_data:HealthcareSearchEngin,current_user: dict = Depends(get_current_user)):
-    return await search_engin_health_care_center(current_user["user_id"],search_data)
+    return await search_engin_health_care_center(current_user["user_id"],search_data) 
