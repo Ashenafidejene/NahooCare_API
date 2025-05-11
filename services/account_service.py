@@ -159,7 +159,7 @@ async def get_secrete_question(phone_number:str):
         account = await collection.find_one({"phone_number": phone_number})
         if not account:
             raise HTTPException(status_code=404, detail="This phone number does not found ")
-        return account['secret_question']
+        return {'question':account['secret_question']}
     except Exception as e:
         logging.error(f"Error finding secret_question :{e}")
         raise HTTPException(status_code=500 , detail="Internal server error")
