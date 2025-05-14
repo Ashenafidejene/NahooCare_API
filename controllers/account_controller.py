@@ -55,7 +55,7 @@ async def login(data: LoginSchema):
         raise HTTPException(status_code=401, detail="Invalid phone number or password")
 
     access_token = create_access_token({"sub": user["user_id"],"user_id":user["user_id"]}, expires_delta=timedelta(minutes=60))
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer","full_name":user['full_name']}
 
 # Get Account (Protected Route)
 @router.get("/")
