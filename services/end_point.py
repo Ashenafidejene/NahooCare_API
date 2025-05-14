@@ -10,16 +10,16 @@ from services.saved_search_service import create_search_record
 from services.symptom_analysis_services import analyze_symptoms
 
 
-async def User_search(search :SearchMaterial ):
-    symptom_obeject = SymptomAnalysisRequest(symptoms=search.symptom,user_id=search.user_id)
+async def User_search(search :SearchMaterial,user_id:str ):
+    symptom_obeject = SymptomAnalysisRequest(symptoms=search.symptom,user_id=user_id)
     
     analysis = await analyze_symptoms(symptom_obeject)
     specialties = analysis.healthCare_center_specialty
     hospitalData = HealthcareSearch(latitude=search.latitude,longitude = search.longitude ,specialties=specialties,max_distance_km=search.max_distance_km)
-    health_center_data = await  search_healthcare_centers(search.user_id ,hospitalData)
+    health_center_data = await  search_healthcare_centers(user_id,hospitalData)
 
     search_record = SavedSearchCreate(
-        user_id=search.user_id,
+        user_id=user_id,
         search_id=str(uuid.uuid4()),
         search_parameters=symptom_obeject.model_dump(),
         results_count=len(health_center_data ),

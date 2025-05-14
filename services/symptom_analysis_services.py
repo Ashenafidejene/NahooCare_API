@@ -13,7 +13,7 @@ genai.configure(api_key=settings.OPENAI_API_KEY)
 
 
 # Initialize the model correctly
-model = genai.GenerativeModel('gemini-1.5-pro-latest')
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 async def analyze_symptoms(request: SymptomAnalysisRequest) -> SymptomAnalysisResponse:
     prompt = f"""
