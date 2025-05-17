@@ -32,8 +32,8 @@ async def get_health_profile(user_id:str):
     try:
         profile = await collection.find_one({"user_id": user_id})
         if not profile:
-            raise HTTPException(status_code=404, detail="for this user the Health profile not found")
-
+            return {"message": "No health profile found for this user"}
+        
         profile["_id"] = str(profile["_id"])
         return HealthProfileResponse(profile_id=profile["profile_id"],blood_type=profile["blood_type"],allergies=profile["allergies"],chronic_conditions=profile["chronic_conditions"],medical_history=profile["medical_history"])
 

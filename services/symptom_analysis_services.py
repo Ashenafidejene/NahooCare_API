@@ -43,7 +43,6 @@ async def analyze_symptoms(request: SymptomAnalysisRequest) -> SymptomAnalysisRe
         )
         
         text = response.text.strip()
-        
         # Parse response
         conditions = [
             cond.strip() 
@@ -72,7 +71,7 @@ async def analyze_symptoms(request: SymptomAnalysisRequest) -> SymptomAnalysisRe
             "healthCare_center_specialty": departments,
             "first_aid": {  # Unified first aid for all conditions
                 "title": first_aid_title,
-                "description": first_aid_desc
+                "description": first_aid_desc,
             },
             "analyzed_at": datetime.utcnow().isoformat()
         }
