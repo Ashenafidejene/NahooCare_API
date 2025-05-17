@@ -43,7 +43,9 @@ class HelathcareCenterRespons(BaseModel):
     contact_info: Dict[str, str]= Field(None, example= {
     "Reception": "+251-11-123-4567",
     "Emergency": "+251-91-234-5678"})
-    available_time : List[str] = Field(..., example=["it works every day 8:00 am - 10:pm "]) 
+    available_time : List[str] = Field(..., example=["it works every day 8:00 am - 10:pm "])
+    average_rating : int = Field(..., example=4)
+
 class HealthcareSearchEngin(BaseModel):
     """Search schema for healthcare centers with location-based filtering"""
     name: Optional[str] = Field(

@@ -201,6 +201,7 @@ async def get_healthcareCenter(center_id: str):
         if not existing_center: 
             raise HTTPException(status_code=404, detail="Healthcare Center not found")
         new_count = existing_center.get("view_info", 0) + 1
+        average_rating = existing_center.get("average_rating", 0)
         await collection.update_one(
                 {"center_id": center_id},
                 {"$set": {"view_info": new_count}}
@@ -216,7 +217,8 @@ async def get_healthcareCenter(center_id: str):
             longitude=existing_center["longitude"],
             specialists=existing_center["specialists"],
             contact_info=existing_center["contact_info"],
-            available_time=existing_center["available_time"]
+            available_time=existing_center["available_time"],
+            average_rating=average_rating,
         )
     except Exception as e:
         logging.error(f"Error getting healthcare center: {e}")
