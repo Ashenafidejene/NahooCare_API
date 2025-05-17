@@ -4,7 +4,7 @@ from datetime import datetime
 
 class RatingCreate(BaseModel):
     center_id: str = Field(..., example="3001")
-    rating_value: int = Field(..., ge=1, le=5, example=4)
+    rating_value: int = Field(..., ge=1, le=6, example=4)
     comment: str = Field(None, example="Good service and staff.")
 
 

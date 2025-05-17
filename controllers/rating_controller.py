@@ -6,7 +6,7 @@ from middleware.admin_auth import get_current_admin
 router = APIRouter()
 @router.post("/submit")
 async def rate(rating: RatingCreate, current_user: dict = Depends(get_current_user)):
-    result = await submit_rating(current_user["user_id"],rating=RatingCreate)
+    result = await submit_rating(current_user["user_id"],rating=rating)
     if result : 
         return {"message": "Rating submitted successfully"}
 @router.get("/{center_id}")
