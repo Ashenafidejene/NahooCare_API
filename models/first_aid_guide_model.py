@@ -1,3 +1,4 @@
+from typing import List
 from pydantic import BaseModel, Field
 from bson import ObjectId
 
@@ -24,8 +25,9 @@ class FirstAidGuide(BaseModel):
     """
     id: PyObjectId = Field(default_factory=lambda: str(ObjectId()), alias="_id")
     guide_id: str
-    emergency_type: str
-    instructions: str
+    emergency_title: str
+    instructions: List[str]
+    image_url: str
     category: str
 
     class Config:
