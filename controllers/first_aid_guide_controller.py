@@ -14,7 +14,7 @@ router = APIRouter()
 
 # Create a New First Aid Guide
 @router.post("/create")
-async def add_first_aid_guide(guide: FirstAidGuideCreate,current_admin: dict = Depends(get_current_admin)):
+async def add_first_aid_guide(guide: FirstAidGuideCreate):
     """
     Creates a new first aid guide in the database.
     

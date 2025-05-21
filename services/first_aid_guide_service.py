@@ -1,6 +1,7 @@
+import uuid
 from db.mongodb import database
 from models.first_aid_guide_model import FirstAidGuide
-from schemas.first_aid_guide_schemas import FirstAidGuideCreate, FirstAidGuideUpdate
+from schemas.first_aid_guide_schemas import FirstAidGuideCreate, FirstAidGuideResponse, FirstAidGuideUpdate
 from bson import ObjectId
 
 collection = database["first_aid_guides"]
@@ -19,11 +20,8 @@ async def create_first_aid_guide(guide_data: FirstAidGuideCreate):
     Returns:
         str: The ID of the newly created guide, or None if the guide already exists.
     """
-    guide = await collection.find_one({"guide_id": guide_data.guide_id})
-    if guide:
-        return None  # Guide with the same ID already exists
-
     guide_dict = guide_data.dict()
+    guide_dict["guide_id"] =  str(uuid.uuid4()) # Generate a unique guide ID
     result = await collection.insert_one(guide_dict)
     return str(result.inserted_id)
 
@@ -41,7 +39,12 @@ async def get_all_first_aid_guides():
         guides = []
         async for guide in collection.find():
             guide["_id"] = str(guide["_id"])  # Convert ObjectId to string
-            guides.append(guide)
+            guides.append(FirstAidGuideResponse(
+                category=guide["category"],
+                emergency_title=guide["emergency_title"],
+                instructions=guide["instructions"],
+                image_url=guide["image_url"],
+            ))
 
         if not guides:
             return {"message": "No first aid guides found"}
