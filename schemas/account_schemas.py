@@ -18,13 +18,12 @@ class PasswordResetSchema(BaseModel):
 class AccountResponse(BaseModel):
     full_name: str
     phone_number: str
-    #gender: str
-    #secret_question: str
-    #secret_answer: str
-    #age: int
+    secret_question: str
+    secret_answer: str
+
 class UpdateAccount(BaseExceptionGroup):
     full_name: str
     phone_number:str
     secret_question: str
     secret_answer: str
-    password : str 
+    password : str

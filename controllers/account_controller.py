@@ -70,7 +70,7 @@ async def get_user_account(current_user: dict = Depends(get_current_user)):
     Raises:
         HTTPException: If the user is not found.
     """
-    account = await get_account(current_user.get("user_id"))
+    account = await get_account(current_user["user_id"])
     if account:
         return account
     raise HTTPException(status_code=404, detail="User not found")
