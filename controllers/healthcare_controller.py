@@ -33,4 +33,4 @@ async def delete_center(center_id: str,current_admin: dict = Depends(get_current
     return await delete_healthcare_center(center_id)
 @router.post("search/specification/")
 async def searchEngin(search_data:HealthcareSearchEngin,current_user: dict = Depends(get_current_user)):
-    return await search_engin_health_care_center(current_user["user_id"],search_data) 
+    return await search_engin_health_care_center(current_user["user_id"],search_data)
