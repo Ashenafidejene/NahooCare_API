@@ -18,10 +18,10 @@ class SavedSearch(BaseModel):
     id: PyObjectId 
     search_id: str 
     user_id: str
-    search_parameters: dict 
+    search_parameters: str 
+    potential_conditions: list[str]
+    first_aid: Dict[str, str]
     results_count: int
-    created_at: str
-    
     search_time: str = Field(..., example="2025-01-04T14:30:00Z")
     class Config:
         json_encoders = {ObjectId: str}  # Ensures ObjectId is serialized as a string
