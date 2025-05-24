@@ -12,7 +12,7 @@ import logging
 
 from schemas.dormant_user_schemas import CreateDormant
 from services.healthprofile_service import  delete_health_profile_by_id
-from services.saved_search_service import delete_search_history
+from services.saved_search_service import  delete_search_historyAll
 from services.symptom_analysis_services import delete_symptom_analysis
 collection = database["accounts"]
 collection2 = database['dormant_user']
@@ -116,7 +116,7 @@ async def delete_account(user_id: str):
         
         result2 = await delete_symptom_analysis(user_id)
         result3 = await delete_health_profile_by_id(user_id)
-        result4 = await delete_search_history(user_id=user_id)
+        result4 = await delete_search_historyAll(user_id=user_id)
         if result.deleted_count == 0 :
             raise HTTPException(status_code=404, detail="User not found")
 

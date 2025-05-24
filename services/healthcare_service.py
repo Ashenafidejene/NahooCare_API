@@ -152,14 +152,14 @@ async def search_engin_health_care_center(user_id: str, search_data: HealthcareS
             )
         
         # Log the successful search
-        search_record = SavedSearchCreate(
-            user_id=user_id,
-            search_id=str(uuid.uuid4()),
-            search_parameters=search_data.model_dump(),
-            results_count=len(centers),
-            Analysis_id = "None"
-        )
-        await create_search_record(search_record)
+        # search_record = SavedSearchCreate(
+        #     user_id=user_id,
+        #     search_id=str(uuid.uuid4()),
+        #     search_parameters=search_data.model_dump(),
+        #     results_count=len(centers),
+        #     Analysis_id = "None"
+        # )
+        # await create_search_record(search_record)
         
         output = []
         for center in centers:

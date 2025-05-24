@@ -21,9 +21,10 @@ async def User_search(search :SearchMaterial,user_id:str ):
     search_record = SavedSearchCreate(
         user_id=user_id,
         search_id=str(uuid.uuid4()),
-        search_parameters=symptom_obeject.model_dump(),
-        results_count=len(health_center_data ),
-        Analysis_id = analysis.analysis_id
+        search_parameters=search.symptom,
+        potential_conditions=analysis.potential_conditions,
+        first_aid=analysis.first_aid,
+        results_count=len(health_center_data),
     )
     await create_search_record(search_record)
     
