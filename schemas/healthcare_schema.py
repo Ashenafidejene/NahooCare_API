@@ -44,7 +44,7 @@ class HelathcareCenterRespons(BaseModel):
     "Reception": "+251-11-123-4567",
     "Emergency": "+251-91-234-5678"})
     available_time : List[str] = Field(..., example=["it works every day 8:00 am - 10:pm "])
-    average_rating : int = Field(..., example=4)
+    average_rating : float = Field(..., example=4)
 
 class HealthcareSearchEngin(BaseModel):
     """Search schema for healthcare centers with location-based filtering"""
@@ -101,3 +101,9 @@ class HealthcareSearchEngin(BaseModel):
                 "max_distance_km": 10
             }
         }
+class GetAllHealthcareCentersResponse(BaseModel):
+    center_id : str = Field(..., example="center_id_Yekatit")
+    name: str = Field(..., example="Yekatit 12 General Hospital")
+    latitude: float = Field(..., example=9.0456)
+    longitude: float = Field(..., example=38.7612)
+    specialists: List[str] = Field(..., example=["Cardiology", "Neurology"])

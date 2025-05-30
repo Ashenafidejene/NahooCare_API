@@ -1,10 +1,17 @@
 from fastapi import APIRouter, HTTPException, Depends
 from middleware.admin_auth import get_current_admin
 from schemas.healthcare_schema import HealthcareCenterCreate, HealthcareCenterUpdate, HealthcareSearch, HealthcareSearchEngin
-from services.healthcare_service import admin_search_healthCare, admin_total_healthCare, create_healthcare_center, delete_healthcare_center, get_healthcareCenter, search_engin_health_care_center, search_healthcare_centers, update_healthcare_center
+from services.healthcare_service import admin_search_healthCare, admin_total_healthCare, create_healthcare_center, delete_healthcare_center, get_healthcareCenter, search_engin_health_care_center, search_healthcare_centers, update_healthcare_center, user_get_all_healthcare_centers
 from middleware.auth import get_current_user
 
 router = APIRouter()
+@router.get("/user/total_healthcare/")
+async def total_healthCare(current_user: dict = Depends(get_current_user) ):
+    """
+    Endpoint to get total healthcare information for a user.
+    """
+    result = await user_get_all_healthcare_centers()
+    return result
 @router.get("/totalInfo")
 async def healthCareInfo():
     return await admin_total_healthCare()

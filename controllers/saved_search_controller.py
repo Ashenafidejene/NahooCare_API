@@ -48,4 +48,3 @@ async def delete_history_by_user_id(current_user: dict = Depends(get_current_use
     if deleted_count:
         return {"message": f"{deleted_count} search histories deleted successfully for user {current_user['user_id']}"}
     raise HTTPException(status_code=404, detail="No search history found for the user")
-

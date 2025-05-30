@@ -2,19 +2,16 @@ import uuid
 from fastapi import HTTPException
 from db.mongodb import database
 from models.healthcare_model import HealthcareCenter
-from schemas.healthcare_schema import HealthcareCenterCreate, HealthcareSearch ,HealthcareCenterUpdate, HealthcareSearchEngin, HelathcareCenterRespons, SearchOutput
+from schemas.healthcare_schema import GetAllHealthcareCentersResponse, HealthcareCenterCreate, HealthcareSearch ,HealthcareCenterUpdate, HealthcareSearchEngin, HelathcareCenterRespons, SearchOutput
 from bson import ObjectId
 from pymongo import GEOSPHERE
 import logging
 
 from schemas.saved_search_schemas import SavedSearchCreate
 from services.saved_search_service import create_search_record
-
 collection = database["healthcare_centers"]
 collection2 = database["dormant_healthcare_centers"]
-
 collection.create_index([("location", GEOSPHERE)])
-
 async def create_healthcare_center(center: HealthcareCenterCreate):
     try:
         existing_center = await collection.find_one({"name": center.name})
@@ -38,7 +35,6 @@ async def create_healthcare_center(center: HealthcareCenterCreate):
     except Exception as e:
         logging.error(f"Error creating healthcare center: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
 async def search_healthcare_centers(user_id:str , search_data: HealthcareSearch):
     """
     Search for healthcare centers based on specialty and location.
@@ -200,6 +196,7 @@ async def get_healthcareCenter(center_id: str):
         
         if not existing_center: 
             raise HTTPException(status_code=404, detail="Healthcare Center not found")
+        sector = existing_center.get("sector", "Unknown")
         new_count = existing_center.get("view_info", 0) + 1
         average_rating = existing_center.get("average_rating", 0)
         await collection.update_one(
@@ -219,6 +216,7 @@ async def get_healthcareCenter(center_id: str):
             contact_info=existing_center["contact_info"],
             available_time=existing_center["available_time"],
             average_rating=average_rating,
+            sector=sector
         )
     except Exception as e:
         logging.error(f"Error getting healthcare center: {e}")
@@ -259,3 +257,12 @@ async def admin_total_healthCare():
         "total_healthCare":total_healthCare,
         "total_dormant_heathCare": total_dormant_heathCare
     }
+async def user_get_all_healthcare_centers():
+    try:
+        centers = []
+        async for center in collection.find({}, {"_id": 0}):
+            centers.append(GetAllHealthcareCentersResponse(**center))
+        return centers
+    except Exception as e:
+        logging.error(f"Error getting all healthcare centers: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error") 
