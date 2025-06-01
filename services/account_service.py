@@ -61,7 +61,7 @@ async def get_account(user_id: str):
             raise HTTPException(status_code=404, detail="User not found")
         if "_id" in account:
             account["_id"] = str(account["_id"])
-        return AccountResponse(full_name=account['full_name'],phone_number=account['phone_number'],secret_answer=account['secret_answer'],secret_question=account["secret_question"])
+        return AccountResponse(**account)
     except Exception as e:
         logging.error(f"Error retrieving user: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
