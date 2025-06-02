@@ -30,4 +30,7 @@ class UpdateAccount(BaseExceptionGroup):
     phone_number:str
     secret_question: str
     secret_answer: str
+    date_of_birth : str
+    photo_url : str
+    gender: str
     password : str

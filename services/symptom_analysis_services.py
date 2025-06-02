@@ -21,8 +21,7 @@ async def analyze_symptoms(request: SymptomAnalysisRequest) -> SymptomAnalysisRe
     
     1. List 3-5 possible conditions (comma-separated)
     2. Recommend departments from:
-       [Cardiac, Internal Medicine, Pediatrics, Orthopedics, 
-        Surgery, Neurology, ENT, General Hospital,Comprehensive Hospital,Comprehensive Specialized Hospital,Primary Hospital]
+       [Maternal and Child (MCH) Center,Chiropractic Center,Internal Medicine Center,Cardiac Center,ENT Center,Psychiatry Center,Neurology Center,Aesthetic and anti-aging,surgery Center ,Ophthalmology,IVF (in-vitro Fertilization) center ,Trauma Center,General Hospital, Comprehensive Specialized Hospital,General Hospital, Primary Hospital, ]
     3. Provide list  simple first aid recommendation that 
        applies to most of these conditions (title + description)
     
