@@ -10,7 +10,7 @@ router = APIRouter()
 async def create(profile: HealthProfileCreate,current_user: dict = Depends(get_current_user)):
     result = await create_health_profile(current_user["user_id"],profile)
     if result:
-        return {"message":"Account create success Fully"}
+        return result
     raise HTTPException(status_code=400, detail="Failed to create health profile")
 @router.get("/")
 async def get_profile(current_user: dict = Depends(get_current_user)):

@@ -14,15 +14,13 @@ async def create_health_profile(user_id:str,profile: HealthProfileCreate):
         existing_profile = await collection.find_one({"user_id": user_id})
         if existing_profile:
             raise HTTPException(status_code=400, detail="this user have already exists profile")
-
         profile_data = profile.dict()
         profile_data["last_update"] = datetime.utcnow()
         profile_data["user_id"] = user_id
         profile_data["profile_id"] = ('profile_' + user_id)
 
         result = await collection.insert_one(profile_data)
-        return str(result.inserted_id)
-
+        return profile
     except Exception as e:
         logging.error(f"Error creating health profile: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
@@ -55,8 +53,9 @@ async def update_health_profile(user_id: str, update_data: HealthProfileUpdate):
         result = await collection.update_one({"user_id": user_id}, {"$set": update_data_dict})
         if result.modified_count == 0:
             raise HTTPException(status_code=400, detail="No changes were made")
-
-        return {"message": "Health profile updated successfully"}
+        update_result = await collection.find_one({"user_id": user_id})
+        update_result["_id"] = str(update_result["_id"])
+        return HealthProfileResponse(**update_result)
 
     except Exception as e:
         logging.error(f"Error updating health profile: {e}")
