@@ -69,10 +69,12 @@ async def get_account(user_id: str):
 async def update_account(user_id: str, update_data: UpdateAccount):
     try:
         existing_user = await collection.find_one({"phone_number": update_data.phone_number})
+        
+        
         dormant_user = await collection2.find_one({"phone_number": update_data.phone_number})
         if dormant_user:
             await collection2.delete_one({"phone_number":update_data.phone_number})
-        if existing_user:
+        if existing_user["user_id"] != user_id:
             raise HTTPException(status_code=400, detail="Phone number already registered")
         hashPassword = hash_password(update_data.password)
         del update_data.password
