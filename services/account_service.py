@@ -87,9 +87,6 @@ async def update_account(user_id: str, update_data: UpdateAccount):
             {"$set": update_dict}
         )
         
-        if result.modified_count == 0:
-            raise HTTPException(status_code=404, detail="No changes made or user not found")
-        
         # Optionally fetch and return the updated document
         updated_account = await collection.find_one({"user_id": user_id})
         if "_id" in updated_account:
