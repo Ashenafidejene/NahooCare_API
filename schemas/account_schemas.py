@@ -25,7 +25,7 @@ class AccountResponse(BaseModel):
     photo_url : str
     gender: str
     
-class UpdateAccount(BaseExceptionGroup):
+class UpdateAccount(BaseModel):
     full_name: str
     phone_number:str
     secret_question: str
