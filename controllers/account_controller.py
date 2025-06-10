@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 
 from datetime import timedelta
-from schemas.account_schemas import AccountCreate, AccountResponse, LoginSchema, PasswordResetSchema
+from schemas.account_schemas import AccountCreate, AccountResponse, LoginSchema, PasswordResetSchema, UpdateAccount
 from services.account_service import create_account, authenticate_user, get_account, get_secrete_question, update_account, delete_account, reset_password
 from core.security import create_access_token
 from core.config import settings
@@ -90,7 +90,7 @@ async def get_secret_question(phone_number:str):
         return result
     return HTTPException(status_code=404, detail="User not found")
 @router.put("/")
-async def update_user_account( update_data:  AccountResponse ,current_user: dict = Depends(get_current_user)):
+async def update_user_account( update_data:  UpdateAccount  ,current_user: dict = Depends(get_current_user)):
     """
     Update account details for a specific user.
     Args:
