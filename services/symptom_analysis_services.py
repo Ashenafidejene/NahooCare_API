@@ -16,21 +16,39 @@ genai.configure(api_key=settings.OPENAI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 async def analyze_symptoms(request: SymptomAnalysisRequest) -> SymptomAnalysisResponse:
-    prompt = f"""
-    Analyze these symptoms: "{request.symptoms}"
+    # Detect if the symptoms are in Amharic (simple detection)
+    is_amharic = any('\u1200' <= char <= '\u137F' for char in request.symptoms)
     
-    1. List 3-5 possible conditions (comma-separated)
-    2. Recommend departments from:
-       [Maternal and Child (MCH) Center,Chiropractic Center,Internal Medicine Center,Cardiac Center,ENT Center,Psychiatry Center,Neurology Center,Aesthetic and anti-aging,surgery Center ,Ophthalmology,IVF (in-vitro Fertilization) center ,Trauma Center,General Hospital, Comprehensive Specialized Hospital,General Hospital, Primary Hospital, ]
-    3. Provide list  simple first aid recommendation that 
-       applies to most of these conditions (title + description)
-    
-    Respond in EXACT format:
-    Possible Conditions: condition1, condition2, condition3
-    Recommended Departments: department1, department2
-    First Aid Title: 3-5 word action title
-    First Aid Description: 1-2 sentence simple advice
-    """
+    if is_amharic:
+        prompt = f"""
+        Analyze these symptoms: "{request.symptoms}"
+        
+        1. List 3-5 possible conditions (comma-separated, in Amharic)
+        2. Recommend departments from:
+           [Maternal and Child (MCH) Center,Chiropractic Center,Internal Medicine Center,Cardiac Center,ENT Center,Psychiatry Center,Neurology Center,Aesthetic and anti-aging,surgery Center ,Ophthalmology,IVF (in-vitro Fertilization) center ,Trauma Center,General Hospital, Comprehensive Specialized Hospital,General Hospital, Primary Hospital, ]
+        3. Provide list simple first aid recommendation in Amharic (title + description)
+        
+        Respond in EXACT format:
+        Possible Conditions: ሁኔታ1, ሁኔታ2, ሁኔታ3
+        Recommended Departments: department1, department2
+        First Aid Title: 3-5 ቃላት ያሉ �ና እርምጃ
+        First Aid Description: 1-2 ቀላል ምክር
+        """
+    else:
+        prompt = f"""
+        Analyze these symptoms: "{request.symptoms}"
+        
+        1. List 3-5 possible conditions (comma-separated, in English)
+        2. Recommend departments from:
+           [Maternal and Child (MCH) Center,Chiropractic Center,Internal Medicine Center,Cardiac Center,ENT Center,Psychiatry Center,Neurology Center,Aesthetic and anti-aging,surgery Center ,Ophthalmology,IVF (in-vitro Fertilization) center ,Trauma Center,General Hospital, Comprehensive Specialized Hospital,General Hospital, Primary Hospital, ]
+        3. Provide list simple first aid recommendation in English (title + description)
+        
+        Respond in EXACT format:
+        Possible Conditions: condition1, condition2, condition3
+        Recommended Departments: department1, department2
+        First Aid Title: 3-5 word action title
+        First Aid Description: 1-2 sentence simple advice
+        """
     try:
         # Correct API call with generation config
         response = model.generate_content(
