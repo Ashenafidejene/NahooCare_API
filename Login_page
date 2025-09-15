@@ -1,0 +1,182 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:my_flutter_app/pages/main_page.dart';
+import 'package:my_flutter_app/pages/signup_page.dart'; // Import the sign-up page
+
+const baseUrl = 'http://localhost:8000/';
+const loginRoute = '${baseUrl}login';
+const userRoute = '${baseUrl}user';
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  LoginPageState createState() => LoginPageState();
+}
+
+class LoginPageState extends State<LoginPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool isLoading = false;
+  String? errorMessage;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.blueAccent[700],
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text(
+                'Hello, Developers!!!',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Login to continue',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _usernameController,
+                decoration: InputDecoration(
+                  hintText: 'Username',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  hintText: 'Password',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: isLoading ? null : _handleLogin,
+                child: isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text(
+                        'Login',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+              ),
+              if (errorMessage != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  errorMessage!,
+                  style: const TextStyle(color: Colors.red, fontSize: 16),
+                ),
+              ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "Don't have an account?",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SignupPage()),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.amber,
+                    ),
+                    child: const Text('Sign up'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleLogin() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    final response = await http.post(
+      Uri.parse(loginRoute),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'username': _usernameController.text.trim().toLowerCase(),
+        'password': _passwordController.text.trim(),
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final String token = data['token'];
+
+      await fetchUsername(context, token);
+    } else {
+      setState(() {
+        errorMessage = "Invalid username or password";
+      });
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  Future<void> fetchUsername(BuildContext context, String token) async {
+    final response = await http.get(
+      Uri.parse(userRoute),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      String username = data['username'];
+
+      if (!context.mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainPage(username: username)),
+      );
+    } else {
+      setState(() {
+        errorMessage = "Failed to fetch user data";
+      });
+    }
+  }
+}
